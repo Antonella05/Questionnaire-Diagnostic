@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionnaire Diagnostic – Projet Restauration | Impact Plus</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --blue-primary: #1B5FA8;
+    --blue-dark: #154d8a;
+    --blue-light: #2472c8;
+    --blue-pale: #e8f1fb;
+    --blue-border: #c2d8f0;
+    --gray-light: #f5f7fa;
+    --gray-mid: #e2e8f0;
+    --gray-text: #4a5568;
+    --gray-dark: #2d3748;
+    --shadow: 0 2px 12px rgba(27,95,168,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: #f0f4fa;
+    color: var(--gray-dark);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER UNIQUE ── */
+  .header {
+    background: var(--blue-primary);
+    padding: 0 40px;
+    display: flex;
+    align-items: stretch;
+    box-shadow: 0 3px 16px rgba(27,95,168,0.28);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    padding: 16px 0;
+    border-right: 1px solid rgba(255,255,255,0.18);
+    padding-right: 28px;
+    margin-right: 28px;
+  }
+  .header-logo img { height: 48px; }
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .header-text h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.02em;
+  }
+  .header-text p {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.72);
+    margin-top: 2px;
+  }
+  .header-progress {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .prog-step {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.35);
+    color: rgba(255,255,255,0.55);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+    cursor: default;
+  }
+  .prog-step.done {
+    background: rgba(255,255,255,0.22);
+    border-color: rgba(255,255,255,0.7);
+    color: white;
+  }
+  .prog-step.active {
+    background: white;
+    border-color: white;
+    color: var(--blue-primary);
+  }
+  .prog-line {
+    width: 18px;
+    height: 2px;
+    background: rgba(255,255,255,0.25);
+  }
+  .prog-line.done { background: rgba(255,255,255,0.6); }
+
+  /* ── CONTAINER ── */
+  .container {
+    max-width: 820px;
+    margin: 36px auto 60px;
+    padding: 0 20px;
+  }
+
+  /* ── STEP PANEL ── */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  /* ── SECTION CARD ── */
+  .section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+  .section-header {
+    background: var(--blue-primary);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .section-num {
+    background: white;
+    color: var(--blue-primary);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.0rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .section-body { padding: 28px 28px 32px; }
+
+  /* ── QUESTIONS ── */
+  .question-group { margin-bottom: 20px; }
+  .question-group:last-child { margin-bottom: 0; }
+
+  label.q-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-dark);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  input[type="text"], input[type="email"], input[type="tel"],
+  input[type="number"], input[type="date"], select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--blue-border);
+    border-radius: 7px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--gray-dark);
+    background: var(--gray-light);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(27,95,168,0.12);
+    background: white;
+  }
+  textarea { resize: vertical; min-height: 85px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 580px) { .two-col { grid-template-columns: 1fr; } }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 8px;
+  }
+  .option-item {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 9px 12px;
+    border: 1.5px solid var(--blue-border);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .option-item:hover { background: var(--blue-pale); border-color: var(--blue-light); }
+  .option-item input[type="radio"], .option-item input[type="checkbox"] {
+    width: auto; padding: 0; background: none; border: none;
+    margin-top: 3px; cursor: pointer; accent-color: var(--blue-primary); flex-shrink: 0;
+  }
+  .option-item span { font-size: 0.85rem; color: var(--gray-dark); line-height: 1.4; }
+  .option-item.checked { background: var(--blue-pale); border-color: var(--blue-primary); }
+
+  /* ── NAV BUTTONS ── */
+  .nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    gap: 12px;
+  }
+  .btn {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.04em;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  }
+  .btn-prev {
+    background: white;
+    color: var(--blue-primary);
+    border: 2px solid var(--blue-border);
+  }
+  .btn-prev:hover { background: var(--blue-pale); border-color: var(--blue-primary); }
+  .btn-next {
+    background: var(--blue-primary);
+    color: white;
+    box-shadow: 0 4px 14px rgba(27,95,168,0.28);
+    margin-left: auto;
+  }
+  .btn-next:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+  .step-indicator {
+    font-size: 0.82rem;
+    color: var(--gray-text);
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* ── FINAL STEP ── */
+  .final-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 40px 28px;
+    text-align: center;
+  }
+  .final-panel h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--blue-primary);
+    margin-bottom: 10px;
+  }
+  .final-panel p {
+    color: var(--gray-text);
+    font-size: 0.92rem;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+  .btn-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-dl {
+    background: var(--blue-primary);
+    color: white;
+    box-shadow: 0 4px 14px rgba(27,95,168,0.28);
+  }
+  .btn-dl:hover { background: var(--blue-dark); transform: translateY(-1px); }
+  .btn-mail {
+    background: white;
+    color: var(--blue-primary);
+    border: 2px solid var(--blue-primary);
+  }
+  .btn-mail:hover { background: var(--blue-pale); }
+
+  /* ── PDF CONTENT (hidden on screen) ── */
+  #pdf-content {
+    display: none;
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+    color: #1a1a2e;
+    padding: 20px;
+    max-width: 700px;
+  }
+  #pdf-content h1 {
+    font-size: 15pt;
+    color: #1B5FA8;
+    border-bottom: 2px solid #1B5FA8;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+  }
+  #pdf-content h2 {
+    font-size: 11pt;
+    color: #1B5FA8;
+    text-transform: uppercase;
+    margin: 18px 0 8px;
+    border-left: 4px solid #1B5FA8;
+    padding-left: 8px;
+  }
+  #pdf-content .qa { margin-bottom: 8px; }
+  #pdf-content .qa .q { font-weight: bold; color: #2d3748; font-size: 10pt; }
+  #pdf-content .qa .a { color: #444; font-size: 10pt; margin-top: 2px; padding-left: 8px; }
+
+  /* ── MODAL POPUP ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 30, 60, 0.55);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.open { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal-box {
+    background: white;
+    border-radius: 14px;
+    max-width: 480px;
+    width: 90%;
+    padding: 36px 32px 28px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(10,30,60,0.3);
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-icon {
+    font-size: 2.8rem;
+    margin-bottom: 14px;
+  }
+  .modal-box h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--blue-primary);
+    margin-bottom: 14px;
+  }
+  .modal-box p {
+    font-size: 0.92rem;
+    color: var(--gray-text);
+    line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .modal-warning {
+    background: #fff4e0;
+    border: 1.5px solid #f0a500;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: #7a4e00;
+    font-weight: 600;
+    margin: 16px 0 22px;
+    line-height: 1.5;
+  }
+  .modal-warning strong { color: #c47800; }
+  .modal-btn-ok {
+    background: var(--blue-primary);
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    padding: 12px 36px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 4px 14px rgba(27,95,168,0.28);
+    transition: background 0.2s, transform 0.1s;
+  }
+  .modal-btn-ok:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 22px 20px;
+    font-size: 0.76rem;
+    color: #7a90aa;
+  }
+</style>
+</head>
+<body>
+
+<!-- UNIQUE HEADER -->
+<header class="header">
+  <div class="header-logo">
+    <img src="data:image/png;base64,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" alt="Impact Plus">
+  </div>
+  <div class="header-text">
+    <h1>Questionnaire Diagnostic – Projet Restauration</h1>
+    <p>Renseignez chaque section pour recevoir un accompagnement personnalisé</p>
+  </div>
+  <div class="header-progress" id="header-progress">
+    <!-- Injected by JS -->
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- STEP 1 -->
+  <div class="step-panel active" data-step="1">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>Informations Générales sur le Porteur de Projet</h2>
+      </div>
+      <div class="section-body">
+        <div class="two-col">
+          <div class="question-group">
+            <label class="q-label">Nom et Prénom</label>
+            <input type="text" name="nom_prenom" placeholder="Votre nom et prénom">
+          </div>
+          <div class="question-group">
+            <label class="q-label">Âge</label>
+            <input type="number" name="age" placeholder="Votre âge" min="18" max="99">
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="question-group">
+            <label class="q-label">Nationalité</label>
+            <input type="text" name="nationalite" placeholder="Votre nationalité">
+          </div>
+          <div class="question-group">
+            <label class="q-label">Situation familiale</label>
+            <select name="situation_familiale">
+              <option value="">-- Sélectionner --</option>
+              <option>Célibataire</option>
+              <option>Marié(e)</option>
+              <option>Pacsé(e)</option>
+              <option>Divorcé(e)</option>
+              <option>Veuf/Veuve</option>
+            </select>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="question-group">
+            <label class="q-label">Adresse</label>
+            <input type="text" name="adresse" placeholder="Votre adresse complète">
+          </div>
+          <div class="question-group">
+            <label class="q-label">Téléphone</label>
+            <input type="tel" name="telephone" placeholder="Numéro de téléphone">
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Email</label>
+          <input type="email" name="email" placeholder="Votre adresse email">
+        </div>
+        <div class="question-group">
+          <label class="q-label">Niveau d'études</label>
+          <select name="niveau_etudes">
+            <option value="">-- Sélectionner --</option>
+            <option>Sans diplôme</option>
+            <option>CAP / BEP</option>
+            <option>Baccalauréat</option>
+            <option>Bac+2 (BTS, DUT…)</option>
+            <option>Bac+3 (Licence)</option>
+            <option>Bac+4 (Master 1)</option>
+            <option>Bac+5 et plus (Master, Ingénieur, Doctorat…)</option>
+          </select>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous déjà créé ou géré une entreprise ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="deja_cree" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="deja_cree" value="Non"><span>Non</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Si oui, dans quel secteur ?</label>
+          <input type="text" name="secteur_precedent" placeholder="Précisez le secteur d'activité">
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <span class="step-indicator">Section 1 / 6</span>
+      <button class="btn btn-next" onclick="nextStep()">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" data-step="2">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2>Description du Projet de Restauration</h2>
+      </div>
+      <div class="section-body">
+        <div class="question-group">
+          <label class="q-label">Quel type de restauration envisagez-vous ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="checkbox" name="type_resto" value="Restauration rapide"><span>Restauration rapide</span></label>
+            <label class="option-item"><input type="checkbox" name="type_resto" value="Restauration traditionnelle / assise"><span>Restauration traditionnelle / assise</span></label>
+            <label class="option-item"><input type="checkbox" name="type_resto" value="Snack / Sandwicherie"><span>Snack / Sandwicherie</span></label>
+            <label class="option-item"><input type="checkbox" name="type_resto" value="Salon de thé / café"><span>Salon de thé / café</span></label>
+            <label class="option-item"><input type="checkbox" name="type_resto" value="Restauration ethnique"><span>Restauration ethnique</span></label>
+            <label class="option-item"><input type="checkbox" name="type_resto" value="Traiteur / Livraison à domicile"><span>Traiteur / Livraison à domicile</span></label>
+            <label class="option-item"><input type="checkbox" name="type_resto" value="Food truck"><span>Food truck</span></label>
+            <label class="option-item"><input type="checkbox" name="type_resto" value="Autre"><span>Autre</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Si autre, précisez :</label>
+          <input type="text" name="type_resto_autre" placeholder="Précisez">
+        </div>
+        <div class="question-group">
+          <label class="q-label">Quelle est votre spécialité culinaire envisagée ?</label>
+          <input type="text" name="specialite" placeholder="Ex : cuisine africaine, italienne, végétarienne…">
+        </div>
+        <div class="question-group">
+          <label class="q-label">Quel est le nom envisagé pour votre établissement ?</label>
+          <input type="text" name="nom_etablissement" placeholder="Nom de l'établissement">
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous déjà un local identifié ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="local_identifie" value="Oui, déjà loué / acquis"><span>Oui, déjà loué / acquis</span></label>
+            <label class="option-item"><input type="radio" name="local_identifie" value="Oui, en cours de négociation"><span>Oui, en cours de négociation</span></label>
+            <label class="option-item"><input type="radio" name="local_identifie" value="Non, pas encore"><span>Non, pas encore</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Si oui, où se situe-t-il ? (ville, quartier)</label>
+          <input type="text" name="localisation_local" placeholder="Ville, quartier…">
+        </div>
+        <div class="two-col">
+          <div class="question-group">
+            <label class="q-label">Surface approximative du local (m²)</label>
+            <input type="number" name="surface_local" placeholder="Surface en m²">
+          </div>
+          <div class="question-group">
+            <label class="q-label">Nombre de couverts envisagé</label>
+            <input type="number" name="nb_couverts" placeholder="Nombre de couverts">
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous défini votre clientèle cible ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="checkbox" name="clientele" value="Particuliers"><span>Particuliers</span></label>
+            <label class="option-item"><input type="checkbox" name="clientele" value="Salariés / Actifs"><span>Salariés / Actifs</span></label>
+            <label class="option-item"><input type="checkbox" name="clientele" value="Étudiants"><span>Étudiants</span></label>
+            <label class="option-item"><input type="checkbox" name="clientele" value="Touristes"><span>Touristes</span></label>
+            <label class="option-item"><input type="checkbox" name="clientele" value="Familles"><span>Familles</span></label>
+            <label class="option-item"><input type="checkbox" name="clientele" value="Entreprises / B2B"><span>Entreprises / B2B</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn btn-prev" onclick="prevStep()">← Précédent</button>
+      <span class="step-indicator">Section 2 / 6</span>
+      <button class="btn btn-next" onclick="nextStep()">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-panel" data-step="3">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2>Expérience et Compétences</h2>
+      </div>
+      <div class="section-body">
+        <div class="question-group">
+          <label class="q-label">Avez-vous une formation ou une expérience dans la restauration ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="formation_resto" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="formation_resto" value="Non"><span>Non</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Si oui, décrivez votre parcours :</label>
+          <textarea name="parcours_resto" placeholder="Formation, expériences professionnelles dans la restauration…"></textarea>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous des compétences en gestion / comptabilité ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="competences_gestion" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="competences_gestion" value="Non"><span>Non</span></label>
+            <label class="option-item"><input type="radio" name="competences_gestion" value="Partiellement"><span>Partiellement</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous suivi des formations en entrepreneuriat ou en gestion d'entreprise ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="formation_entrepre" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="formation_entrepre" value="Non"><span>Non</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Si oui, lesquelles ?</label>
+          <input type="text" name="formations_details" placeholder="Intitulé des formations suivies">
+        </div>
+        <div class="question-group">
+          <label class="q-label">Serez-vous seul(e) à gérer l'établissement ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="seul_gestion" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="seul_gestion" value="Non"><span>Non</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Si non, qui vous accompagnera ? (associé, conjoint, salarié…)</label>
+          <input type="text" name="accompagnateurs" placeholder="Précisez la ou les personnes">
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn btn-prev" onclick="prevStep()">← Précédent</button>
+      <span class="step-indicator">Section 3 / 6</span>
+      <button class="btn btn-next" onclick="nextStep()">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-panel" data-step="4">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2>Aspects Financiers</h2>
+      </div>
+      <div class="section-body">
+        <div class="question-group">
+          <label class="q-label">Avez-vous évalué le budget nécessaire pour lancer votre projet ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="budget_evalue" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="budget_evalue" value="Non"><span>Non</span></label>
+            <label class="option-item"><input type="radio" name="budget_evalue" value="En cours d'évaluation"><span>En cours d'évaluation</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Quel est le montant estimé de votre investissement de départ ?</label>
+          <select name="montant_investissement">
+            <option value="">-- Sélectionner --</option>
+            <option>Moins de 5 000 €</option>
+            <option>Entre 5 000 € et 15 000 €</option>
+            <option>Entre 15 000 € et 30 000 €</option>
+            <option>Entre 30 000 € et 50 000 €</option>
+            <option>Entre 50 000 € et 100 000 €</option>
+            <option>Plus de 100 000 €</option>
+          </select>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Disposez-vous d'un apport personnel ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="apport_perso" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="apport_perso" value="Non"><span>Non</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Si oui, quel est le montant approximatif de votre apport ?</label>
+          <input type="text" name="montant_apport" placeholder="Montant de l'apport personnel">
+        </div>
+        <div class="question-group">
+          <label class="q-label">Quelles sources de financement envisagez-vous ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="checkbox" name="financement" value="Apport personnel"><span>Apport personnel</span></label>
+            <label class="option-item"><input type="checkbox" name="financement" value="Prêt bancaire"><span>Prêt bancaire</span></label>
+            <label class="option-item"><input type="checkbox" name="financement" value="Aides publiques (ADIE, BPI, etc.)"><span>Aides publiques (ADIE, BPI, etc.)</span></label>
+            <label class="option-item"><input type="checkbox" name="financement" value="Famille / Amis"><span>Famille / Amis</span></label>
+            <label class="option-item"><input type="checkbox" name="financement" value="Crowdfunding"><span>Crowdfunding</span></label>
+            <label class="option-item"><input type="checkbox" name="financement" value="Investisseur privé"><span>Investisseur privé</span></label>
+            <label class="option-item"><input type="checkbox" name="financement" value="Autre"><span>Autre</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous réalisé un prévisionnel financier (compte de résultat, plan de trésorerie) ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="previsionnel" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="previsionnel" value="Non"><span>Non</span></label>
+            <label class="option-item"><input type="radio" name="previsionnel" value="En cours"><span>En cours</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn btn-prev" onclick="prevStep()">← Précédent</button>
+      <span class="step-indicator">Section 4 / 6</span>
+      <button class="btn btn-next" onclick="nextStep()">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step-panel" data-step="5">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>Avancement du Projet</h2>
+      </div>
+      <div class="section-body">
+        <div class="question-group">
+          <label class="q-label">À quel stade en est votre projet ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="stade_projet" value="Idée / Réflexion"><span>Idée / Réflexion</span></label>
+            <label class="option-item"><input type="radio" name="stade_projet" value="Étude de faisabilité"><span>Étude de faisabilité</span></label>
+            <label class="option-item"><input type="radio" name="stade_projet" value="En cours de création"><span>En cours de création</span></label>
+            <label class="option-item"><input type="radio" name="stade_projet" value="Déjà créé (en activité)"><span>Déjà créé (en activité)</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Quelle est votre date d'ouverture prévisionnelle ?</label>
+          <input type="date" name="date_ouverture">
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous déjà effectué des démarches administratives (immatriculation, licences, normes hygiène…) ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="demarches_admin" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="demarches_admin" value="Non"><span>Non</span></label>
+            <label class="option-item"><input type="radio" name="demarches_admin" value="En cours"><span>En cours</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous un business plan rédigé ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="business_plan" value="Oui, complet"><span>Oui, complet</span></label>
+            <label class="option-item"><input type="radio" name="business_plan" value="Oui, partiel"><span>Oui, partiel</span></label>
+            <label class="option-item"><input type="radio" name="business_plan" value="Non"><span>Non</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn btn-prev" onclick="prevStep()">← Précédent</button>
+      <span class="step-indicator">Section 5 / 6</span>
+      <button class="btn btn-next" onclick="nextStep()">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step-panel" data-step="6">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>Besoins en Accompagnement</h2>
+      </div>
+      <div class="section-body">
+        <div class="question-group">
+          <label class="q-label">Sur quels aspects souhaitez-vous être accompagné(e) ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="checkbox" name="accompagnement" value="Rédaction du business plan"><span>Rédaction du business plan</span></label>
+            <label class="option-item"><input type="checkbox" name="accompagnement" value="Prévisionnel financier"><span>Prévisionnel financier</span></label>
+            <label class="option-item"><input type="checkbox" name="accompagnement" value="Recherche de financement"><span>Recherche de financement</span></label>
+            <label class="option-item"><input type="checkbox" name="accompagnement" value="Démarches administratives"><span>Démarches administratives</span></label>
+            <label class="option-item"><input type="checkbox" name="accompagnement" value="Formation en gestion"><span>Formation en gestion</span></label>
+            <label class="option-item"><input type="checkbox" name="accompagnement" value="Marketing et communication"><span>Marketing et communication</span></label>
+            <label class="option-item"><input type="checkbox" name="accompagnement" value="Recrutement et gestion du personnel"><span>Recrutement et gestion du personnel</span></label>
+            <label class="option-item"><input type="checkbox" name="accompagnement" value="Autre"><span>Autre</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous déjà bénéficié d'un accompagnement pour ce projet ?</label>
+          <div class="options-grid">
+            <label class="option-item"><input type="radio" name="deja_accompagne" value="Oui"><span>Oui</span></label>
+            <label class="option-item"><input type="radio" name="deja_accompagne" value="Non"><span>Non</span></label>
+          </div>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Si oui, par quel organisme ?</label>
+          <input type="text" name="organisme_accompagnement" placeholder="Nom de l'organisme">
+        </div>
+        <div class="question-group">
+          <label class="q-label">Quelles sont vos principales difficultés ou freins actuels ?</label>
+          <textarea name="difficultes" placeholder="Décrivez vos difficultés ou obstacles rencontrés…"></textarea>
+        </div>
+        <div class="question-group">
+          <label class="q-label">Avez-vous des questions ou des commentaires à ajouter ?</label>
+          <textarea name="commentaires" placeholder="Questions, remarques, informations complémentaires…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="btn btn-prev" onclick="prevStep()">← Précédent</button>
+      <span class="step-indicator">Section 6 / 6</span>
+      <button class="btn btn-next" onclick="showFinal()" style="background:#27ae60;">Terminer ✓</button>
+    </div>
+  </div>
+
+  <!-- FINAL PANEL -->
+  <div class="step-panel" data-step="7">
+    <div class="final-panel">
+      <div style="font-size:3rem;margin-bottom:14px;">✅</div>
+      <h3>Questionnaire complété !</h3>
+      <p>Merci pour vos réponses. Vous pouvez maintenant télécharger votre rapport ou l'envoyer directement par email à l'équipe Impact Plus.</p>
+      <div class="btn-actions">
+        <button class="btn btn-dl" onclick="downloadPDF()">⬇ Télécharger le rapport PDF</button>
+        <button class="btn btn-mail" onclick="sendEmail()">✉ Envoyer par email</button>
+      </div>
+      <div style="margin-top:20px;">
+        <button class="btn btn-prev" onclick="prevStep()">← Modifier mes réponses</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL POPUP -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <h3>Action importante requise</h3>
+    <p>Félicitations, vous avez complété toutes les sections du questionnaire !</p>
+    <div class="modal-warning">
+      <strong>Attention :</strong> Pour que votre dossier soit pris en compte par Impact Plus, vous devez impérativement :<br><br>
+      1️⃣ &nbsp;<strong>Télécharger votre rapport PDF</strong><br>
+      2️⃣ &nbsp;<strong>L'envoyer par email</strong> à l'adresse Impact Plus
+      <br><br>
+      Sans ces deux étapes, votre questionnaire <strong>ne pourra pas être traité</strong>.
+    </div>
+    <button class="modal-btn-ok" onclick="closeModal()">J'ai compris — Accéder au rapport</button>
+  </div>
+</div>
+
+<!-- PDF CONTENT (rendered off-screen for export) -->
+<div id="pdf-content"></div>
+
+<div class="footer">© Impact Plus – Tous droits réservés</div>
+
+<script>
+const TOTAL_STEPS = 6;
+let currentStep = 1;
+
+const sectionTitles = [
+  "Informations Générales sur le Porteur de Projet",
+  "Description du Projet de Restauration",
+  "Expérience et Compétences",
+  "Aspects Financiers",
+  "Avancement du Projet",
+  "Besoins en Accompagnement"
+];
+
+// Build progress dots
+function buildProgress() {
+  const bar = document.getElementById('header-progress');
+  bar.innerHTML = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    if (i > 1) {
+      const line = document.createElement('div');
+      line.className = 'prog-line' + (i <= currentStep ? ' done' : '');
+      bar.appendChild(line);
+    }
+    const dot = document.createElement('div');
+    dot.className = 'prog-step' + (i < currentStep ? ' done' : i === currentStep ? ' active' : '');
+    dot.textContent = i;
+    bar.appendChild(dot);
+  }
+}
+
+function showStep(step) {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.querySelector(`[data-step="${step}"]`);
+  if (panel) panel.classList.add('active');
+  currentStep = step <= TOTAL_STEPS ? step : currentStep;
+  buildProgress();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function nextStep() {
+  if (currentStep < TOTAL_STEPS) showStep(currentStep + 1);
+}
+
+function prevStep() {
+  const active = document.querySelector('.step-panel.active');
+  const s = parseInt(active.dataset.step);
+  showStep(s - 1);
+}
+
+function showFinal() {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-step="7"]').classList.add('active');
+  buildProgress();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+  // Show warning modal
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// Highlight options
+document.querySelectorAll('.option-item input').forEach(input => {
+  input.addEventListener('change', () => {
+    if (input.type === 'radio') {
+      document.querySelectorAll(`input[name="${input.name}"]`).forEach(r => {
+        r.closest('.option-item').classList.remove('checked');
+      });
+    }
+    if (input.checked) input.closest('.option-item').classList.add('checked');
+    else input.closest('.option-item').classList.remove('checked');
+  });
+});
+
+// Collect all form data
+function collectData() {
+  const data = {};
+  document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="date"], select, textarea').forEach(el => {
+    if (el.name && el.value) data[el.name] = el.value;
+  });
+  document.querySelectorAll('input[type="radio"]:checked').forEach(el => {
+    data[el.name] = el.value;
+  });
+  const checkGroups = {};
+  document.querySelectorAll('input[type="checkbox"]:checked').forEach(el => {
+    if (!checkGroups[el.name]) checkGroups[el.name] = [];
+    checkGroups[el.name].push(el.value);
+  });
+  Object.assign(data, checkGroups);
+  return data;
+}
+
+// Build readable PDF HTML
+function buildPDFContent() {
+  const d = collectData();
+  const date = new Date().toLocaleDateString('fr-FR');
+
+  const sections = [
+    {
+      title: "1. Informations Générales sur le Porteur de Projet",
+      fields: [
+        ["Nom et Prénom", d.nom_prenom],
+        ["Âge", d.age],
+        ["Nationalité", d.nationalite],
+        ["Situation familiale", d.situation_familiale],
+        ["Adresse", d.adresse],
+        ["Téléphone", d.telephone],
+        ["Email", d.email],
+        ["Niveau d'études", d.niveau_etudes],
+        ["Déjà créé ou géré une entreprise ?", d.deja_cree],
+        ["Si oui, dans quel secteur ?", d.secteur_precedent],
+      ]
+    },
+    {
+      title: "2. Description du Projet de Restauration",
+      fields: [
+        ["Type de restauration envisagé", Array.isArray(d.type_resto) ? d.type_resto.join(', ') : d.type_resto],
+        ["Autre type (précision)", d.type_resto_autre],
+        ["Spécialité culinaire", d.specialite],
+        ["Nom de l'établissement", d.nom_etablissement],
+        ["Local identifié", d.local_identifie],
+        ["Localisation du local", d.localisation_local],
+        ["Surface du local (m²)", d.surface_local],
+        ["Nombre de couverts", d.nb_couverts],
+        ["Clientèle cible", Array.isArray(d.clientele) ? d.clientele.join(', ') : d.clientele],
+      ]
+    },
+    {
+      title: "3. Expérience et Compétences",
+      fields: [
+        ["Formation / expérience en restauration", d.formation_resto],
+        ["Parcours", d.parcours_resto],
+        ["Compétences en gestion / comptabilité", d.competences_gestion],
+        ["Formation en entrepreneuriat", d.formation_entrepre],
+        ["Lesquelles ?", d.formations_details],
+        ["Seul(e) à gérer l'établissement", d.seul_gestion],
+        ["Qui vous accompagnera ?", d.accompagnateurs],
+      ]
+    },
+    {
+      title: "4. Aspects Financiers",
+      fields: [
+        ["Budget évalué", d.budget_evalue],
+        ["Montant estimé de l'investissement", d.montant_investissement],
+        ["Apport personnel", d.apport_perso],
+        ["Montant de l'apport", d.montant_apport],
+        ["Sources de financement", Array.isArray(d.financement) ? d.financement.join(', ') : d.financement],
+        ["Prévisionnel financier réalisé", d.previsionnel],
+      ]
+    },
+    {
+      title: "5. Avancement du Projet",
+      fields: [
+        ["Stade du projet", d.stade_projet],
+        ["Date d'ouverture prévisionnelle", d.date_ouverture],
+        ["Démarches administratives effectuées", d.demarches_admin],
+        ["Business plan rédigé", d.business_plan],
+      ]
+    },
+    {
+      title: "6. Besoins en Accompagnement",
+      fields: [
+        ["Aspects d'accompagnement souhaités", Array.isArray(d.accompagnement) ? d.accompagnement.join(', ') : d.accompagnement],
+        ["Déjà bénéficié d'un accompagnement", d.deja_accompagne],
+        ["Par quel organisme", d.organisme_accompagnement],
+        ["Principales difficultés / freins", d.difficultes],
+        ["Questions / commentaires", d.commentaires],
+      ]
+    }
+  ];
+
+  let html = `<h1>Rapport Diagnostic – Projet Restauration<br><small style="font-size:9pt;color:#666;">Généré le ${date} | Impact Plus</small></h1>`;
+
+  sections.forEach(sec => {
+    html += `<h2>${sec.title}</h2>`;
+    sec.fields.forEach(([q, a]) => {
+      if (a) html += `<div class="qa"><div class="q">${q}</div><div class="a">${a}</div></div>`;
+    });
+  });
+
+  return html;
+}
+
+function downloadPDF() {
+  const content = document.getElementById('pdf-content');
+  content.innerHTML = buildPDFContent();
+  content.style.display = 'block';
+
+  const opt = {
+    margin: [12, 14],
+    filename: 'Rapport_Diagnostic_Restauration_ImpactPlus.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(content).save().then(() => {
+    content.style.display = 'none';
+  });
+}
+
+function sendEmail() {
+  const d = collectData();
+  const nom = d.nom_prenom || '(Non renseigné)';
+  const projet = d.nom_etablissement || '(Non renseigné)';
+
+  const body = encodeURIComponent(
+    `Bonjour,\n\nVeuillez trouver ci-dessous le rapport du questionnaire diagnostic soumis via le formulaire Impact Plus.\n\n` +
+    `--- INFORMATIONS GÉNÉRALES ---\n` +
+    `Nom et Prénom : ${d.nom_prenom || '-'}\n` +
+    `Âge : ${d.age || '-'}\n` +
+    `Nationalité : ${d.nationalite || '-'}\n` +
+    `Situation familiale : ${d.situation_familiale || '-'}\n` +
+    `Adresse : ${d.adresse || '-'}\n` +
+    `Téléphone : ${d.telephone || '-'}\n` +
+    `Email : ${d.email || '-'}\n` +
+    `Niveau d'études : ${d.niveau_etudes || '-'}\n` +
+    `Déjà créé une entreprise : ${d.deja_cree || '-'}\n` +
+    `Secteur précédent : ${d.secteur_precedent || '-'}\n\n` +
+    `--- PROJET ---\n` +
+    `Type de restauration : ${Array.isArray(d.type_resto) ? d.type_resto.join(', ') : (d.type_resto || '-')}\n` +
+    `Spécialité : ${d.specialite || '-'}\n` +
+    `Nom établissement : ${d.nom_etablissement || '-'}\n` +
+    `Local identifié : ${d.local_identifie || '-'}\n` +
+    `Localisation : ${d.localisation_local || '-'}\n` +
+    `Surface : ${d.surface_local || '-'} m²\n` +
+    `Couverts : ${d.nb_couverts || '-'}\n` +
+    `Clientèle cible : ${Array.isArray(d.clientele) ? d.clientele.join(', ') : (d.clientele || '-')}\n\n` +
+    `--- EXPÉRIENCE ---\n` +
+    `Formation restauration : ${d.formation_resto || '-'}\n` +
+    `Parcours : ${d.parcours_resto || '-'}\n` +
+    `Compétences gestion : ${d.competences_gestion || '-'}\n` +
+    `Formation entrepreneuriat : ${d.formation_entrepre || '-'}\n` +
+    `Formations suivies : ${d.formations_details || '-'}\n` +
+    `Gestion seul(e) : ${d.seul_gestion || '-'}\n` +
+    `Accompagnateurs : ${d.accompagnateurs || '-'}\n\n` +
+    `--- FINANCES ---\n` +
+    `Budget évalué : ${d.budget_evalue || '-'}\n` +
+    `Montant investissement : ${d.montant_investissement || '-'}\n` +
+    `Apport personnel : ${d.apport_perso || '-'} — ${d.montant_apport || '-'}\n` +
+    `Sources financement : ${Array.isArray(d.financement) ? d.financement.join(', ') : (d.financement || '-')}\n` +
+    `Prévisionnel réalisé : ${d.previsionnel || '-'}\n\n` +
+    `--- AVANCEMENT ---\n` +
+    `Stade : ${d.stade_projet || '-'}\n` +
+    `Ouverture prévue : ${d.date_ouverture || '-'}\n` +
+    `Démarches admin : ${d.demarches_admin || '-'}\n` +
+    `Business plan : ${d.business_plan || '-'}\n\n` +
+    `--- ACCOMPAGNEMENT ---\n` +
+    `Besoins : ${Array.isArray(d.accompagnement) ? d.accompagnement.join(', ') : (d.accompagnement || '-')}\n` +
+    `Déjà accompagné : ${d.deja_accompagne || '-'}\n` +
+    `Organisme : ${d.organisme_accompagnement || '-'}\n` +
+    `Difficultés : ${d.difficultes || '-'}\n` +
+    `Commentaires : ${d.commentaires || '-'}\n\n` +
+    `Cordialement`
+  );
+
+  const subject = encodeURIComponent(`Questionnaire Diagnostic Restauration – ${nom} – ${projet}`);
+  window.open(`mailto:impactplusconsulting229@gmail.com?subject=${subject}&body=${body}`, '_self');
+}
+
+buildProgress();
+</script>
+</body>
+</html>
